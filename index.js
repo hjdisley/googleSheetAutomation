@@ -1,8 +1,7 @@
 const { google } = require("googleapis");
 const fetch = require("node-fetch");
 const { spreadsheetId } = require("./secrets");
-
-let visibilityScore = [];
+var visibilityScore = [];
 const updateSistrix = async () => {
   const auth = new google.auth.GoogleAuth({
     keyFile: "credentials.json",
@@ -58,8 +57,9 @@ const yourMainFunction = (domain, endpoint) => {
       .then((res) => {
         let value =
           res.answer[0].sichtbarkeitsindex[0].value +
-          visibilityScore.push(value);
-        console.log(value);
+          " " +
+          res.answer[0].sichtbarkeitsindex[0].domain;
+        visibilityScore.push(value);
         resolve();
       })
       .catch((err) => console.log(err));
