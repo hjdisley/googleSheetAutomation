@@ -1,6 +1,7 @@
 const { google } = require("googleapis");
+const { spreadsheetId,apiKey } = require("./secrets");
 const fetch = require("node-fetch");
-const { spreadsheetId } = require("./secrets");
+
 var visibilityScore = [];
 const updateSistrix = async () => {
   const auth = new google.auth.GoogleAuth({
@@ -10,12 +11,13 @@ const updateSistrix = async () => {
   const client = await auth.getClient();
   const googleSheets = google.sheets({ version: "v4", auth: client });
   const metaData = await googleSheets.spreadsheets.get({ auth, spreadsheetId });
-  const endpoint = `https://api.sistrix.com/domain.sichtbarkeitsindex?api_key=LtADkhSEcRs5QrDrPxD84YMt2SjRUA2FgMrh&date=&04-26-2021&domain=`;
+  // Change date in request ---------------------------------------------------------------->          <-------
+  const endpoint = `https://api.sistrix.com/domain.sichtbarkeitsindex?api_key=${apiKey}&date=&05-03-2021&domain=`;
   const getRows = await googleSheets.spreadsheets.values
     .get({
       auth,
       spreadsheetId,
-      range: "allClientsData!B1:GZ1",
+      range: "Domains!A1:HF1",
     })
     .then((res) => {
       const the_data = res.data.values.flat();
@@ -36,8 +38,8 @@ const updateSistrix = async () => {
             .append({
               auth,
               spreadsheetId,
-              // Updata cell Range ->          <-
-              range: "allClientsData!B307:GZ307",
+              // Updata cell Range ->    <-
+              range: "allClientsData!B:HG",
               valueInputOption: "USER_ENTERED",
               resource: {
                 values: [parsedScore],
@@ -49,16 +51,14 @@ const updateSistrix = async () => {
     })
     .catch((err) => console.log(err));
 };
+
 updateSistrix();
 const yourMainFunction = (domain, endpoint) => {
   return new Promise((resolve) => {
-    fetch(endpoint + domain + "&format=json")
+    fetch(endpoint + domain + "&mobile=true" + "&format=json")
       .then((res) => res.json())
       .then((res) => {
-        let value =
-          res.answer[0].sichtbarkeitsindex[0].value +
-          " " +
-          res.answer[0].sichtbarkeitsindex[0].domain;
+        let value = res.answer[0].sichtbarkeitsindex[0].value;
         visibilityScore.push(value);
         resolve();
       })
